@@ -9,7 +9,8 @@ Version 1.5.0 Improvements:
       · Global histogram        : 20 bins spanning [min_r, max_r]
       · Lower-half zoom         : 20 bins spanning [min_r, median_r]
       · Upper-half zoom         : 20 bins spanning [median_r, max_r]
-  - Significantly improved visual design (professional colour scheme, annotations)
+  - Significantly improved visual design (professional colour scheme,
+    annotations)
   - User-defined parameters for custom m/z and RT column names
   - Removal of the strict naming requirement for the ID column
   - Reinforced defensive programming: comprehensive validation of input files
@@ -24,13 +25,14 @@ Version 1.5.0 Improvements:
     visual order with seaborn's top-down row rendering.
   - Correlation histograms: tolerance parameters (mz, rt) are fully free in the
     XML wrapper (min/max constraints removed).
-  - Correlation histograms: each zoom chart (lower-half, upper-half) now uses its
-    own independent Y-axis scale instead of a shared global scale, eliminating
-    visual distortion when the two halves have very different counts.
-  - Correlation histograms: automatic dual Y-axis (linear left + log right) when
-    the dominant bin is >= 20x the second-largest bin; low-count bars are shown
-    as coloured circles on the log axis so that rare correlation classes remain
-    visible even when a single class dominates the distribution.
+  - Correlation histograms: each zoom chart (lower-half, upper-half) now uses
+    its own independent Y-axis scale instead of a shared global scale,
+    eliminating visual distortion when the two halves have very different
+    counts.
+  - Correlation histograms: automatic dual Y-axis (linear left + log right)
+    when the dominant bin is >= 20x the second-largest bin; low-count bars are
+    shown as coloured circles on the log axis so that rare correlation classes
+    remain visible even when a single class dominates the distribution.
 """
 
 import os
@@ -55,11 +57,14 @@ from weasyprint import HTML
 # =============================================================================
 
 # UTILITY FUNCTIONS
-#######################################################################################################################################################################
+##############################################################################
 
 
 def stop_with_message(message):
-    """Terminates the script execution and displays a clear error message to the user."""
+    """
+    Terminates the script execution and displays
+    a clear error message to the user.
+    """
     print("\n" + "="*60)
     print("❌ ERROR — The tool cannot proceed")
     print("="*60)
@@ -74,31 +79,39 @@ def verifier_fichier(chemin, nom_affiche):
         stop_with_message(
             f"The file '{nom_affiche}' was not found.\n"
             f"Path used: {chemin}\n"
-            f"→ Please verify that the file has been successfully uploaded into Galaxy."
+            f"→ Please verify that the file has been "
+            f"successfully uploaded into Galaxy."
         )
     if os.path.getsize(chemin) == 0:
         stop_with_message(
             f"The file '{nom_affiche}' is empty (0 bytes).\n"
             f"Path used: {chemin}\n"
-            f"→ Please verify that your pre-processing pipeline successfully generated this file."
+            f"→ Please verify that your pre-processing pipeline "
+            f"successfully generated this file."
         )
 
 
 def verifier_format_tabular(chemin, nom_affiche):
-    """Verifies that the file format is a valid, readable tab-separated text file."""
+    """
+    Verifies that the file format is a valid,
+    readable tab-separated text file.
+    """
     try:
         with open(chemin, 'r', encoding='utf-8', errors='replace') as f:
             premiere_ligne = f.readline()
         if '\t' not in premiere_ligne and ',' not in premiere_ligne:
             stop_with_message(
-                f"The file '{nom_affiche}' does not appear to be in a valid tabular format.\n"
+                f"The file '{nom_affiche}' does not appear to be "
+                f"in a valid tabular format.\n"
                 f"First line read: {premiere_ligne[:200]!r}\n"
-                f"→ Ensure that the dataset is tab-separated (standard .tabular format)."
+                f"→ Ensure that the dataset is tab-separated "
+                f"(standard .tabular format)."
             )
     except UnicodeDecodeError:
         stop_with_message(
             f"The file '{nom_affiche}' contains unreadable characters.\n"
-            f"→ The file might be corrupted or in an unsupported binary format."
+            f"→ The file might be corrupted or "
+            f"in an unsupported binary format."
         )
 
 
@@ -118,7 +131,10 @@ def verifier_colonnes(df, nom_affiche, colonnes_requises):
 
 
 def verifier_colonnes_numeriques(df, nom_affiche, colonnes_numeriques):
-    """Verifies that the expected numerical columns contain valid numeric data types."""
+    """
+    Verifies that the expected numerical columns
+    contain valid numeric data types.
+    """
     for col in colonnes_numeriques:
         if col not in df.columns:
             continue
@@ -126,35 +142,48 @@ def verifier_colonnes_numeriques(df, nom_affiche, colonnes_numeriques):
         n_invalides = serie.isna().sum()
         if n_invalides == len(df):
             stop_with_message(
-                f"Column '{col}' in file '{nom_affiche}' contains no numeric values.\n"
+                f"Column '{col}' in file '{nom_affiche}' "
+                f"contains no numeric values.\n"
                 f"Sample values found: {df[col].head(5).tolist()}\n"
-                f"→ This column must contain numbers (m/z or retention time values)."
+                f"→ This column must contain numbers "
+                f"(m/z or retention time values)."
             )
         elif n_invalides > 0:
-            print(f"   ⚠️   Warning: {n_invalides} non-numeric value(s) detected in "
-                  f"column '{col}' of '{nom_affiche}' (coerced to NaN).")
+            print(f"   ⚠️   Warning: {n_invalides} non-numeric value(s) "
+                  f"detected in column '{col}' of '{nom_affiche}' "
+                  f"(coerced to NaN).")
 
 
 def verifier_coherence_dataframes(varmat, datamat, nom_varmat, nom_datamat):
-    """Checks the structural consistency between variableMetadata and dataMatrix files."""
+    """
+    Checks the structural consistency between
+    variableMetadata and dataMatrix files.
+    """
     if len(varmat) == 0:
         stop_with_message(
             f"The file '{nom_varmat}' is empty (no data rows found).\n"
-            f"→ Please verify that your pre-processing pipeline detected features/ions."
+            f"→ Please verify that your pre-processing"
+            f"pipeline detected features/ions."
         )
     if len(datamat) == 0:
         stop_with_message(
             f"The file '{nom_datamat}' is empty (no data rows found).\n"
-            f"→ Please verify that your pre-processing pipeline successfully generated this file."
+            f"→ Please verify that your pre-processing pipeline "
+            f"successfully generated this file."
         )
     if len(varmat) != len(datamat):
-        print(f"   ⚠️   Warning: The number of rows differs between '{nom_varmat}' "
+        print(f"   ⚠️   Warning: The number of rows differs "
+              f"between '{nom_varmat}' "
               f"({len(varmat)}) and '{nom_datamat}' ({len(datamat)}).\n"
-              f"      Data will be processed independently (matching by index alignment).")
+              f"      Data will be processed independently "
+              f"(matching by index alignment).")
 
 
 def safe_log10_min(series):
-    """Calculates the log10 floor of the minimum non-zero value. Returns None if all values are zero."""
+    """
+    Calculates the log10 floor of the minimum non-zero value.
+    Returns None if all values are zero.
+    """
     nonzero = series[series != 0].abs()
     if len(nonzero) == 0:
         return None
@@ -162,7 +191,10 @@ def safe_log10_min(series):
 
 
 def safe_log10_max(series):
-    """Calculates the log10 ceiling of the maximum non-zero value. Returns None if all values are zero."""
+    """
+    Calculates the log10 ceiling of the maximum non-zero value.
+    Returns None if all values are zero.
+    """
     nonzero = series[series != 0].abs()
     if len(nonzero) == 0:
         return None
@@ -200,7 +232,8 @@ wf1_name = sys.argv[7]
 wf2_name = sys.argv[8]
 col_mz = sys.argv[9]    # Target mz column name (default: "mz")
 col_rt = sys.argv[10]   # Target RT column name (default: "rt")
-corr_split = float(sys.argv[11])  # Correlation split threshold for zoom histograms (default: 0.5)
+corr_split = float(sys.argv[11])
+# Correlation split threshold for zoom histograms (default: 0.5)
 
 # Clamp corr_split to the valid Pearson r range [-1.0, 1.0]
 corr_split = max(-1.0, min(1.0, corr_split))
@@ -236,18 +269,20 @@ def charger_datamatrix(chemin, nom):
         stop_with_message(
             f"Unable to read file '{nom}'.\n"
             f"Technical error: {e}\n"
-            f"→ Verify that the file is in a valid tab-separated (.tabular) format."
+            f"→ Verify that the file is in a valid tab-separated format."
         )
     if len(df) == 0:
         stop_with_message(
             f"The file '{nom}' contains no data rows.\n"
-            f"→ Please check that your pre-processing pipeline successfully generated this dataset."
+            f"→ Please check that your pre-processing pipeline"
+            f"successfully generated this dataset."
         )
     if len(df.columns) < 2:
         stop_with_message(
             f"The file '{nom}' contains only a single column.\n"
             f"Columns found: {list(df.columns)}\n"
-            f"→ A dataMatrix must include at least an identifier (ID) column and one sample column."
+            f"→ A dataMatrix must include at least an identifier"
+            f"(ID) column and one sample column."
         )
     df = df.replace({'NA': 0, 'NaN': 0}).fillna(0)
     return df
@@ -260,17 +295,20 @@ def charger_varmetadata(chemin, nom, col_mz, col_rt):
         stop_with_message(
             f"Unable to read file '{nom}'.\n"
             f"Technical error: {e}\n"
-            f"→ Verify that the file is in a valid tab-separated (.tabular) format."
+            f"→ Verify that the file is in a valid"
+            f"tab-separated (.tabular) format."
         )
     if len(df) == 0:
         stop_with_message(
             f"The file '{nom}' contains no data rows.\n"
-            f"→ Please check that your pre-processing pipeline successfully detected features/ions."
+            f"→ Please check that your pre-processing"
+            f"pipeline successfully detected features/ions."
         )
     verifier_colonnes(df, nom, [col_mz, col_rt])
     verifier_colonnes_numeriques(df, nom, [col_mz, col_rt])
 
-    # Convert numerical columns (coerce invalid entries to NaN, then replace with 0)
+    # Convert numerical columns
+    # (coerce invalid entries to NaN, then replace with 0)
     df[col_mz] = pd.to_numeric(df[col_mz], errors='coerce').fillna(0)
     df[col_rt] = pd.to_numeric(df[col_rt], errors='coerce').fillna(0)
     return df
@@ -278,13 +316,22 @@ def charger_varmetadata(chemin, nom, col_mz, col_rt):
 
 pddatamat1 = charger_datamatrix(path_DataMatrix1, "dataMatrix Workflow 1")
 pddatamat2 = charger_datamatrix(path_DataMatrix2, "dataMatrix Workflow 2")
-pdvarmat1 = charger_varmetadata(path_variableMetadata1, "variableMetadata Workflow 1", col_mz, col_rt)
-pdvarmat2 = charger_varmetadata(path_variableMetadata2, "variableMetadata Workflow 2", col_mz, col_rt)
+pdvarmat1 = charger_varmetadata(path_variableMetadata1,
+                                "variableMetadata Workflow 1",
+                                col_mz, col_rt)
+pdvarmat2 = charger_varmetadata(path_variableMetadata2,
+                                "variableMetadata Workflow 2",
+                                col_mz, col_rt)
 
-verifier_coherence_dataframes(pdvarmat1, pddatamat1, "variableMetadata Workflow 1", "dataMatrix Workflow 1")
-verifier_coherence_dataframes(pdvarmat2, pddatamat2, "variableMetadata Workflow 2", "dataMatrix Workflow 2")
+verifier_coherence_dataframes(pdvarmat1, pddatamat1,
+                              "variableMetadata Workflow 1",
+                              "dataMatrix Workflow 1")
+verifier_coherence_dataframes(pdvarmat2, pddatamat2,
+                              "variableMetadata Workflow 2",
+                              "dataMatrix Workflow 2")
 
-# The ID column is assumed to be the first column, allowing any custom name in both file types (1.5.0)
+# The ID column is assumed to be the first column,
+# allowing any custom name in both file types (1.5.0)
 id_col_vm1 = pdvarmat1.columns[0]
 id_col_vm2 = pdvarmat2.columns[0]
 id_col_dm1 = pddatamat1.columns[0]
@@ -325,7 +372,8 @@ print("\n🔗 Performing unique feature matching...")
 start_time = time.time()
 
 blacklist1, blacklist2 = set(), set()
-# Common sample columns = intersection excluding the identifier column of each dataMatrix
+# Common sample columns = intersection
+# excluding the identifier column of each dataMatrix
 common_samples = list(
     pddatamat1.columns.drop(id_col_dm1)
     .intersection(pddatamat2.columns.drop(id_col_dm2))
@@ -390,7 +438,8 @@ print(f"   ⚠️  Unmatched in WF1  : {n_only_wf1} ({100*n_only_wf1/max(n_wf1_t
 print(f"   ⚠️  Unmatched in WF2  : {n_only_wf2} ({100*n_only_wf2/max(n_wf2_total,1):.1f}%)")
 
 # Export tabular file
-tablecomm_final.drop(['id1', 'id2'], axis=1, errors='ignore').to_csv("Associations.tabular", sep='\t', index=False)
+tablecomm_final.drop(['id1', 'id2'], axis=1,
+                     errors='ignore').to_csv("Associations.tabular", sep='\t', index=False)
 print("\n✅ File Associations.tabular exported successfully")
 
 elapsed = time.time() - start_time
@@ -432,7 +481,8 @@ res.write(f"""
 <div class="info-box">
   <b>Workflow 1:</b> {wf1_name}<br>
   <b>Workflow 2:</b> {wf2_name}<br>
-  <b>m/z Tolerance:</b> {tol_mz} Da &nbsp;|&nbsp; <b>RT Tolerance:</b> {tol_RT}<br>
+  <b>m/z Tolerance:</b> {tol_mz} Da &nbsp;|&nbsp;
+  <b>RT Tolerance:</b> {tol_RT}<br>
   <b>Analysis Date:</b> {now}
 </div>
 """)
@@ -441,12 +491,14 @@ res.write(f"""
 res.write(f"""
 <h2>1. Matching Results</h2>
 <div class="info-box">
-  The algorithm pairs each feature from Workflow 1 with the closest feature (by mass)
-  from Workflow 2, provided they satisfy the user-defined m/z and RT tolerance thresholds.
+  The algorithm pairs each feature from Workflow 1 with the closest
+  feature (by mass) from Workflow 2, provided they satisfy the 
+  user-defined m/z and RT tolerance thresholds.
 </div>
 <table>
   <tr><th>Workflow 1 Features</th><th>Workflow 2 Features</th>
-      <th>Unmatched in WF1</th><th>Unmatched in WF2</th><th>Paired Features</th></tr>
+      <th>Unmatched in WF1</th><th>Unmatched in WF2</th>
+      <th>Paired Features</th></tr>
   <tr>
     <td>{n_wf1_total}</td>
     <td>{n_wf2_total}</td>
@@ -459,25 +511,29 @@ res.write(f"""
 
 if n_only_wf1 > 0.3 * n_wf1_total or n_only_wf2 > 0.3 * n_wf2_total:
     res.write("""<div class="warn-box">
-    ⚠️ Warning: more than 30% of the features in at least one workflow remain unmatched.
-    This may indicate major methodological discrepancies between the two pipelines,
-    or overly stringent tolerances. You might consider slightly increasing the thresholds.
+    ⚠️ Warning: more than 30% of the features in at least one workflow remain
+    unmatched. This may indicate major methodological discrepancies between the
+    two pipelines, or overly stringent tolerances. You might consider slightly
+    increasing the thresholds.
     </div>""")
 
 # --- Heatmap Section ---
 res.write("<h2>2. Matching Quality</h2>")
 res.write("""<div class="info-box">
-  The following heatmaps show the proportion of paired features grouped by fractions
-  of the user-defined m/z and RT tolerance thresholds.<br>
-  Each axis starts with an <b>Identical</b> column/row (strict difference = 0), followed
-  by intervals from <b>0</b> to the <b>tolerance values</b> chosen by the user.<br>
-  Except from the ppm axis of the 3rd heatmap (which corresponds to non-overlapping intervals),
-  the intervals are cumulative (from identical to the maximum value).
-  They represent <b>6 sub-intervals</b>, set regularly: equal size for the 1st heatmap,
-  by order of magnitude for the 2nd heatmap (logarithmic scale).<br>
-  The <b>Identical × Identical</b> cell (bottom-left) counts only features with
-  <b>both Δm/z = 0 and ΔRT = 0</b> simultaneously — this definition is independent
-  of the scale (Da or logarithmic) and is identical across all heatmaps.<br>
+  The following heatmaps show the proportion of paired features grouped by
+  fractions of the user-defined m/z and RT tolerance thresholds.<br>
+  Each axis starts with an <b>Identical</b> column/row (strict difference = 0),
+  followed by intervals from <b>0</b> to the <b>tolerance values</b>
+  chosen by the user.<br>
+  Except from the ppm axis of the 3rd heatmap (which corresponds to
+  non-overlapping intervals), the intervals are cumulative
+  (from identical to the maximum value).
+  They represent <b>6 sub-intervals</b>, set regularly: equal size for the 1st
+  heatmap, by order of magnitude for the 2nd heatmap (logarithmic scale).<br>
+  The <b>Identical × Identical</b> cell (bottom-left) counts only features
+  with <b>both Δm/z = 0 and ΔRT = 0</b> simultaneously — this definition
+  is independent of the scale (Da or logarithmic) and is identical
+  across all heatmaps.<br>
 </div>""")
 
 if n_paired > 0:
@@ -508,7 +564,8 @@ if n_paired > 0:
 
         Rows/columns 1 … n_levels — tolerance sub-intervals:
             Cell [i, j] (i ≥ 1, j ≥ 1) = % of paired features with
-            |mzdiff| ≤ i/n_levels × tol_mz  AND  |rtdiff| ≤ j/n_levels × tol_rt.
+            |mzdiff| ≤ i/n_levels × tol_mz  AND
+            |rtdiff| ≤ j/n_levels × tol_rt.
 
         Rows = m/z levels (index 0 = Identical), columns = RT levels.
         """
@@ -530,7 +587,8 @@ if n_paired > 0:
         Generate n_levels tick labels: each label = k/n_levels × tol_val.
         e.g. for tol=0.02 Da and 6 levels → ['0.003', '0.007', '0.010',
                                                '0.013', '0.017', '0.020 (tol)']
-        The last label is annotated with '(tol)' to highlight the full tolerance.
+        The last label is annotated with '(tol)' to highlight the 
+        full tolerance.
         """
         labels = []
         for k in range(1, n_levels + 1):
@@ -546,7 +604,8 @@ if n_paired > 0:
     jet = plt.get_cmap('turbo')
     cmap = [jet(i) for i in np.linspace(0, 0.99, num=20)]
 
-    # ── Tick labels for the Da heatmap (Identical row/column + tolerance sub-intervals) ──
+    # ── Tick labels for the Da heatmap  ────────────────────────
+    # (Identical row/column + tolerance sub-intervals)
     # Row/column 0 of arr1 represents strict exact matches (difference == 0).
     # The label 'Identical' is applied unconditionally to index 0 on both axes,
     # consistent with the scientific definition validated by the supervisor.
@@ -588,8 +647,10 @@ if n_paired > 0:
     # Logarithmic multi-scale heatmap — rebuilt directly from the same logic
     # as Heatmap 1 (Da). The ONLY difference is how the per-level thresholds
     # are derived:
-    #   - Heatmap 1 (Da):  mz_thresh[i] = (i+1)/N_LEVELS * tol_mz   (linear fractions)
-    #   - Heatmap 3 (Log): mz_thresh[i] = tol_mz * 10^LOG_EXPONENTS_LOG[i]  (powers of 10)
+    #   - Heatmap 1 (Da):  mz_thresh[i] = (i+1)/N_LEVELS * tol_mz
+    #                      (linear fractions)
+    #   - Heatmap 3 (Log): mz_thresh[i] = tol_mz * 10^LOG_EXPONENTS_LOG[i]
+    #                      (powers of 10)
     # Everything else — matrix shape (N_LEVELS x N_LEVELS), cell definition,
     # axis convention (X = RT thresholds, Y = m/z thresholds), the "Identical"
     # first-row/first-column label convention, and the invert_yaxis() display
@@ -605,7 +666,8 @@ if n_paired > 0:
 
     # Strictest-first order, same axis direction as Heatmap 1.
     LOG_EXPONENTS_LOG = [-5, -4, -3, -2, -1, 0]
-    N_LOG = len(LOG_EXPONENTS_LOG)   # == N_LEVELS, so the matrix is the same size as arr1
+    N_LOG = len(LOG_EXPONENTS_LOG)
+    # N_LOG == N_LEVELS, so the matrix is the same size as arr1
 
     # Per-level thresholds, mirroring the Da heatmap's mz_thresh / rt_thresh.
     mz_log_thresholds = [tol_mz * (10 ** e) for e in LOG_EXPONENTS_LOG]
@@ -664,12 +726,16 @@ if n_paired > 0:
     # seaborn renders row 0 at the TOP; invert_yaxis() flips so 'Identical'
     # sits at the BOTTOM and the full tolerance at the TOP — identical to the
     # Da heatmap.
-    y_labels_log = tol_labels_log_with_identical(tol_mz, LOG_EXPONENTS_LOG, unit='Da')
-    x_labels_log = tol_labels_log_with_identical(tol_RT, LOG_EXPONENTS_LOG, unit='')
+    y_labels_log = tol_labels_log_with_identical(tol_mz, LOG_EXPONENTS_LOG,
+                                                 unit='Da')
+    x_labels_log = tol_labels_log_with_identical(tol_RT, LOG_EXPONENTS_LOG,
+                                                 unit='')
 
-    # ── Side-by-side figure: Heatmap 1 (Da) on the left, Heatmap 3 (Log) on the right ──
-    # Both heatmaps share the same computation logic; side-by-side display makes
-    # it straightforward to verify that differences stem only from the scale change.
+    # ── Side-by-side figure ────────
+    # Heatmap 1 (Da) on the left, Heatmap 3 (Log) on the right
+    # Both heatmaps share the same computation logic; side-by-side 
+    # display makes it straightforward to verify that differences
+    # stem only from the scale change.
     fig_side, (ax_da_side, ax_log_side) = plt.subplots(
         1, 2, figsize=(16, 7),
         gridspec_kw={'wspace': 0.55}
@@ -691,9 +757,9 @@ if n_paired > 0:
     ax_da_side.set_ylabel(f'm/z (Da) — full tolerance = {tol_mz} Da', fontsize=8)
 
     # Right panel — logarithmic heatmap
-    sns.heatmap(arr_log, annot=True, cmap=cmap, linecolor='white', linewidths=1,
-                fmt='.1f', cbar_kws={'shrink': 0.6}, annot_kws={'fontsize': 8},
-                vmax=100, vmin=0,
+    sns.heatmap(arr_log, annot=True, cmap=cmap, linecolor='white',
+                linewidths=1, fmt='.1f', cbar_kws={'shrink': 0.6},
+                annot_kws={'fontsize': 8}, vmax=100, vmin=0,
                 yticklabels=y_labels_log,
                 xticklabels=x_labels_log, ax=ax_log_side, square=True)
     # invert_yaxis: row 0 (Identical) moves to the BOTTOM; tol×10^0 (full tol)
@@ -701,7 +767,8 @@ if n_paired > 0:
     ax_log_side.invert_yaxis()
     ax_log_side.set_title(
         f'm/z tolerance (Da) — logarithmic multi-scale\n'
-        f'Threshold = tol × 10^exp, exp = {", ".join(str(e) for e in LOG_EXPONENTS_LOG)}',
+        f'Threshold = tol × 10^exp,'
+        f'exp = {", ".join(str(e) for e in LOG_EXPONENTS_LOG)}',
         fontsize=9
     )
     ax_log_side.set_xlabel(
@@ -712,7 +779,8 @@ if n_paired > 0:
     )
 
     fig_side.suptitle(
-        f"Matching Quality Comparison — Da (left) vs Logarithmic Scale (right)\n"
+        f"Matching Quality Comparison"
+        f"— Da (left) vs Logarithmic Scale (right)\n"
         f"m/z tol = {tol_mz} Da  |  RT tol = {tol_RT}",
         fontsize=10
     )
@@ -720,15 +788,16 @@ if n_paired > 0:
     plt.close()
     res.write('<img src="heatmap_log.png">')
 
-    # ── Heatmap 2 (displayed second) — m/z in ppm with fixed analytical classes
+    # ─ Heatmap 2 (displayed second) — m/z in ppm with fixed analytical classes
     # ─────────────────────────────────────────────────────────────────────────
-    # Fixed ppm classes (ascending order, bottom → top on the displayed heatmap):
+    # Fixed ppm classes
+    # (ascending order, bottom → top on the displayed heatmap):
     #   Identical (= 0)  |  ]0;1]  |  ]1;5]  |  ]5;10]  |  ]10;50]  |  >50
     # Each cell [i, j] = % of paired features with |Δm/z(ppm)| in class i
     # AND |ΔRT| ≤ (j+1)/N_LEVELS × tol_RT.
     #
     # "Identical" labels the [= 0 ppm] class, consistent with the Da heatmap.
-    PPM_BOUNDS = [0, 1, 5, 10, 50]   # upper edges of the first 5 finite classes
+    PPM_BOUNDS = [0, 1, 5, 10, 50]   # upper edges of the first 5 classes
     PPM_LABELS = ['Identical\n(= 0 ppm)', ']0 ; 1]', ']1 ; 5]',
                   ']5 ; 10]', ']10 ; 50]', '> 50']
     N_PPM_ROWS = len(PPM_LABELS)     # 6 rows
@@ -757,7 +826,7 @@ if n_paired > 0:
                 vmax=100, vmin=0,
                 yticklabels=PPM_LABELS,
                 xticklabels=x_labels_rt, ax=ax_ppm, square=True)
-    ax_ppm.invert_yaxis()   # ascending order: Identical at bottom, > 50 ppm at top
+    ax_ppm.invert_yaxis()   # ascending: Identical at bottom, >50ppm at top
     ax_ppm.set_title(
         'm/z tolerance (ppm) — fixed analytical classes',
         fontsize=9
@@ -778,7 +847,8 @@ if n_paired > 0:
 if n_paired > 0:
     res.write("<h2>3. Statistics of Paired Features</h2>")
     res.write("""<div class="info-box">
-      Mass (m/z) and retention time (RT) summary statistics for successfully paired features.
+      Mass (m/z) and retention time (RT) summary statistics
+      for successfully paired features.
     </div>""")
 
     def fmt(val, dec=3): return str(np.round(val, dec))
@@ -825,8 +895,8 @@ if nbtot > 0 and len(common_samples) > 0:
     res.write('<div class="page-break"></div>')
     res.write("<h2>4. Intensity Comparison</h2>")
     res.write(f"""<div class="info-box">
-      Intensity comparison across the <b>{len(common_samples)} common samples</b>
-      between the two workflows, for paired ions only.
+      Intensity comparison across the <b>{len(common_samples)} common
+      samples</b> between the two workflows, for paired ions only.
     </div>""")
 
     n1n2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values == 0)).sum())
@@ -838,7 +908,8 @@ if nbtot > 0 and len(common_samples) > 0:
 
     res.write(f"""
     <table>
-      <tr><th></th><th>Zero intensity in WF2</th><th>Non-zero intensity in WF2</th></tr>
+      <tr><th></th><th>Zero intensity in WF2</th>
+          <th>Non-zero intensity in WF2</th></tr>
       <tr><td><b>Zero intensity in WF1</b></td>
           <td>{n1n2} ({round(100*n1n2/nbtot,1)}%)</td>
           <td>{n1nn2} ({round(100*n1nn2/nbtot,1)}%)</td></tr>
@@ -880,18 +951,24 @@ if nbtot > 0 and len(common_samples) > 0:
 
         fig, axs = plt.subplots(figsize=(8, 5))
         bp = dict(linestyle='-', linewidth=2)
-        mp = dict(marker='D', markeredgecolor='black', markerfacecolor='seagreen', markersize=5)
+        mp = dict(marker='D', markeredgecolor='black',
+                  markerfacecolor='seagreen', markersize=5)
 
         dfdiff[dfdiff > 0].boxplot(
-            boxprops=dict(**bp, color='navy'), medianprops=dict(**bp, color='navy'),
-            whiskerprops=dict(**bp, color='navy'), capprops=dict(**bp, color='navy'),
+            boxprops=dict(**bp, color='navy'),
+            medianprops=dict(**bp, color='navy'),
+            whiskerprops=dict(**bp, color='navy'),
+            capprops=dict(**bp, color='navy'),
             flierprops=dict(marker='o', markerfacecolor='navy', markersize=2),
             showmeans=True, meanprops=mp, ax=axs
         )
         dfdiff[dfdiff < 0].boxplot(
-            boxprops=dict(**bp, color='firebrick'), medianprops=dict(**bp, color='firebrick'),
-            whiskerprops=dict(**bp, color='firebrick'), capprops=dict(**bp, color='firebrick'),
-            flierprops=dict(marker='o', markerfacecolor='firebrick', markersize=2),
+            boxprops=dict(**bp, color='firebrick'),
+            medianprops=dict(**bp, color='firebrick'),
+            whiskerprops=dict(**bp, color='firebrick'),
+            capprops=dict(**bp, color='firebrick'),
+            flierprops=dict(marker='o', markerfacecolor='firebrick',
+                            markersize=2),
             showmeans=True, meanprops=mp, ax=axs
         )
 
@@ -902,7 +979,8 @@ if nbtot > 0 and len(common_samples) > 0:
 
         axs.set_xlabel("Order of magnitude (powers of 10)", fontsize=9)
         axs.set_ylabel("Relative intensity difference (%)", fontsize=9)
-        axs.set_title(f"Distribution of intensity differences\n{wf1_name} vs {wf2_name}", fontsize=10)
+        axs.set_title(f"Distribution of intensity differences\n{wf1_name} vs {wf2_name}",
+                      fontsize=10)
 
         legend_lines = [
             Line2D([0], [0], color='navy', lw=3),
@@ -937,7 +1015,8 @@ if nbtot > 0 and len(common_samples) > 0:
                     edgecolor='white', zorder=3, alpha=0.9, label=wf2_name)
             ax1.set_xticks(x)
             ax1.set_xticklabels([f'10e{int(np.ceil(np.log10(bins[i+1])))}' for i in range(len(bins)-1)])
-            ax1.set_title("Intensity distribution by order of magnitude", fontsize=10)
+            ax1.set_title("Intensity distribution by order of magnitude",
+                          fontsize=10)
             ax1.set_xlabel("Order of magnitude", fontsize=9)
             ax1.set_ylabel("Number of values", fontsize=9)
             ax1.legend(fontsize=9)
@@ -945,9 +1024,12 @@ if nbtot > 0 and len(common_samples) > 0:
             fig1.savefig('histo_int_temp.png', bbox_inches='tight', dpi=100)
             plt.close()
             res.write('<img src="histo_int_temp.png">')
-            res.write("""<div class="info-box" style="font-size:12px; margin-top:4px;">
-              <b>Note:</b> Zero intensity values are not included in this distribution plot,
-              as their inclusion may overwhelm the non-zero intensity distribution. Please refer to the summary table above for the number of
+            res.write("""<div class="info-box" style="font-size:12px;
+              margin-top:4px;">
+              <b>Note:</b> Zero intensity values are not included in this
+              distribution plot, as their inclusion may overwhelm the
+              non-zero intensity distribution.
+              Please refer to the summary table above for the number of
               zero-intensity values in each workflow.
             </div>""")
 
@@ -955,16 +1037,26 @@ if nbtot > 0 and len(common_samples) > 0:
         res.write('<div class="page-break"></div>')
         res.write("<h2>5. Per-ion Intensity Correlation</h2>")
         res.write(f"""<div class="info-box">
-          For each paired ion, the Pearson correlation coefficient (computed on log10-transformed intensities)
-          is calculated across the <b>{len(common_samples)} common samples</b> between
-          <b>{wf1_name}</b> and <b>{wf2_name}</b>.<br><br>
+          For each paired ion, the Pearson correlation coefficient
+          (computed on log10-transformed intensities) is calculated
+          across the <b>{len(common_samples)} common samples</b>
+          between <b>{wf1_name}</b> and <b>{wf2_name}</b>.<br><br>
           Four histograms are displayed:<br>
-          &nbsp;&nbsp;⓪ <b>Full-scale histogram</b> — fixed bins [−1.0 → 1.0], step 0.1 (original chart, comparable across runs)<br>
-          &nbsp;&nbsp;① <b>Global distribution</b> — 20 bins spanning [min&nbsp;r,&nbsp;max&nbsp;r]<br>
-          &nbsp;&nbsp;② <b>Lower-half zoom</b> — 20 bins spanning [min&nbsp;r,&nbsp;<b>split&nbsp;threshold&nbsp;=&nbsp;{corr_split:.2f}</b>], focusing on weaker correlations<br>
-          &nbsp;&nbsp;③ <b>Upper-half zoom</b> — 20 bins spanning [<b>split&nbsp;threshold&nbsp;=&nbsp;{corr_split:.2f}</b>,&nbsp;max&nbsp;r], focusing on stronger correlations<br><br>
-          The split threshold (<b>r = {corr_split:.2f}</b>) is user-configurable and separates the two zoom views.
-          Adjust it in the tool parameters to focus on a specific correlation range.
+          &nbsp;&nbsp;⓪ <b>Full-scale histogram</b> — fixed bins [−1.0 → 1.0],
+          step 0.1 (original chart, comparable across runs)<br>
+          &nbsp;&nbsp;① <b>Global distribution</b> — 20 bins spanning
+          [min&nbsp;r,&nbsp;max&nbsp;r]<br>
+          &nbsp;&nbsp;② <b>Lower-half zoom</b> — 20 bins spanning
+          [min&nbsp;r,&nbsp;
+          <b>split&nbsp;threshold&nbsp;=&nbsp;{corr_split:.2f}</b>],
+          focusing on weaker correlations<br>
+          &nbsp;&nbsp;③ <b>Upper-half zoom</b> — 20 bins spanning
+          [<b>split&nbsp;threshold&nbsp;=&nbsp;{corr_split:.2f}</b>,
+          &nbsp;max&nbsp;r],
+          focusing on stronger correlations<br><br> The split
+          threshold (<b>r = {corr_split:.2f}</b>) is user-configurable
+          and separates the two zoom views. Adjust it in the tool
+          parameters to focus on a specific correlation range.
         </div>""")
 
         # Compute Pearson r per ion (across common samples)
@@ -988,10 +1080,11 @@ if nbtot > 0 and len(common_samples) > 0:
 
         if len(ion_r_values) == 0:
             res.write("""<div class="warn-box">
-            ⚠️ Not enough non-zero data points per ion to compute the correlation
-            (minimum of 3 non-zero samples required per ion).<br>
-            Please verify that your data contain a sufficient number of common samples
-            with non-zero intensities.
+            ⚠️ Not enough non-zero data points per ion to compute
+            the correlation (minimum of 3 non-zero samples required 
+            per ion).<br>
+            Please verify that your data contain a sufficient number
+            of common samples with non-zero intensities.
             </div>""")
         else:
             df_r = (pd.DataFrame(ion_r_values)
@@ -1003,16 +1096,20 @@ if nbtot > 0 and len(common_samples) > 0:
             # ── Shared colour scheme and legend ──────────────────────────────
             # Colour thresholds reflect standard interpretation of Pearson r
             PALETTE = {
-                'strong':   '#1a6faf',   # r ≥ 0.80 — strong (deep blue)
-                'moderate': '#56a5d8',   # 0.50 ≤ r < 0.80 — moderate (medium blue)
-                'weak':     '#f5a623',   # 0.30 ≤ r < 0.50 — weak (amber)
-                'poor':     '#c0392b',   # r < 0.30 — poor / negative (red)
+                'strong':   '#1a6faf',   # r≥0.80 — strong (deep blue)
+                'moderate': '#56a5d8',   # 0.50≤r<0.80 — moderate (medium blue)
+                'weak':     '#f5a623',   # 0.30≤r<0.50 — weak (amber)
+                'poor':     '#c0392b',   # r<0.30 — poor / negative (red)
             }
             legend_patches = [
-                mpatches.Patch(facecolor=PALETTE['strong'],   edgecolor='white', label='r ≥ 0.80  —  Strong'),
-                mpatches.Patch(facecolor=PALETTE['moderate'], edgecolor='white', label='0.50 ≤ r < 0.80  —  Moderate'),
-                mpatches.Patch(facecolor=PALETTE['weak'],     edgecolor='white', label='0.30 ≤ r < 0.50  —  Weak'),
-                mpatches.Patch(facecolor=PALETTE['poor'],     edgecolor='white', label='r < 0.30  —  Poor / Negative'),
+                mpatches.Patch(facecolor=PALETTE['strong'],
+                               edgecolor='white', label='r ≥ 0.80  —  Strong'),
+                mpatches.Patch(facecolor=PALETTE['moderate'],
+                               edgecolor='white', label='0.50 ≤ r < 0.80  —  Moderate'),
+                mpatches.Patch(facecolor=PALETTE['weak'],
+                               edgecolor='white', label='0.30 ≤ r < 0.50  —  Weak'),
+                mpatches.Patch(facecolor=PALETTE['poor'],
+                               edgecolor='white', label='r < 0.30  —  Poor / Negative'),
             ]
 
             def color_for_r(r_val):
@@ -1025,9 +1122,9 @@ if nbtot > 0 and len(common_samples) > 0:
                     return PALETTE['weak']
                 return PALETTE['poor']
 
-            # ── Shared aesthetic helper ───────────────────────────────────────
-            def _style_axis(ax, title, xlabel, ylabel, n_ions, subtitle=''):
-                """Apply consistent professional styling to a histogram axis."""
+            # ── Shared aesthetic helper ────────────────────────────────────
+            def _style_axis(ax, title, xlabel, ylabel, n_ion, subtitle=''):
+                """Apply consistent styling to a histogram axis."""
                 ax.set_facecolor('#f7f9fc')
                 ax.grid(axis='y', linestyle='--', linewidth=0.6, alpha=0.7,
                         color='#b0bec5', zorder=0)
@@ -1035,7 +1132,7 @@ if nbtot > 0 and len(common_samples) > 0:
                 ax.spines[['top', 'right']].set_visible(False)
                 ax.spines[['left', 'bottom']].set_color('#90a4ae')
                 ax.tick_params(colors='#455a64', labelsize=7.5)
-                full_title = f"{title}\n{wf1_name}  vs  {wf2_name}  —  {n_ions} ions analysed"
+                full_title = f"{title}\n{wf1_name}  vs  {wf2_name}  —  {n_ion} ions analysed"
                 if subtitle:
                     full_title += f"\n{subtitle}"
                 ax.set_title(full_title, fontsize=9.5, fontweight='bold',
@@ -1046,18 +1143,19 @@ if nbtot > 0 and len(common_samples) > 0:
             def _draw_histogram(ax, r_subset, r_min, r_max, n_bins=20,
                                 annotate_median=True, n_ions_total=None):
                 """
-                Draw a professional histogram on `ax` with exactly `n_bins` bins
-                spanning [r_min, r_max].
+                Draw a professional histogram on `ax` with exactly `n_bins`
+                bins spanning [r_min, r_max].
 
-                When the distribution is strongly skewed (the dominant bin holds
-                more than 20x the second-largest bin), a secondary logarithmic
-                Y-axis is automatically added on the right so that low-count
-                bars remain legible alongside very tall dominant bars.
+                When the distribution is strongly skewed (the dominant bin
+                holds more than 20x the second-largest bin), a secondary
+                logarithmic Y-axis is automatically added on the right so
+                that low-count bars remain legible alongside very tall
+                dominant bars.
 
                 Parameters
                 ----------
                 r_subset : array-like
-                    Correlation values to histogram (may be a subset for zoom views).
+                    Histogram correlation values (may be a subset for zoom).
                 r_min, r_max : float
                     Explicit axis / bin boundaries.
                 n_bins : int
@@ -1099,7 +1197,7 @@ if nbtot > 0 and len(common_samples) > 0:
                                 fontsize=6.5, fontweight='semibold',
                                 color='#2c3e50')
 
-                # ── Conditional secondary log-scale Y-axis ────────────────────
+                # ── Conditional secondary log-scale Y-axis ───────────────────
                 # If the tallest bar is >= 20x the second tallest non-zero bar,
                 # the linear scale hides low-count classes. A twin log axis is
                 # added on the right so every class remains visible.
@@ -1143,29 +1241,30 @@ if nbtot > 0 and len(common_samples) > 0:
 
                 return counts, edges
 
-            # ── Key statistics used across all three charts ───────────────────
+            # ── Key statistics used across all three charts ────────────────
             r_min = float(r_vals.min())
             r_max = float(r_vals.max())
             r_median = float(np.median(r_vals))
-            n_ions = len(r_vals)
+            n_ion = len(r_vals)
             N_BINS = 20   # fixed by specification
 
-            # Clamp the user-defined split threshold to the actual data range so
-            # that both zoom histograms always contain at least one data point.
+            # Clamp the user-defined split threshold to the actual data range
+            # so that both zoom histograms always contain at least one data
+            # point.
             # The threshold is also shown in chart titles and the info-box.
             r_split = float(np.clip(corr_split, r_min, r_max))
 
-            # ══════════════════════════════════════════════════════════════════
-            # Chart 0 — Original fixed-scale histogram  [-1.0 → 1.0]  (step 0.1)
+            # ═════════════════════════════════════════════════════════════════
+            # Chart 0 — Original fixed-scale histogram [-1.0 → 1.0] (step 0.1)
             # Kept from the original tool for backward compatibility.
             # Bins are always the same regardless of the data range, making
             # results directly comparable across different runs.
-            # ══════════════════════════════════════════════════════════════════
+            # ═════════════════════════════════════════════════════════════════
             # Fixed-scale bins [-1.0 → 1.0], step 0.1.
             # The upper boundary is extended by a tiny epsilon so that values
             # exactly equal to 1.0 fall inside the last bin (np.histogram uses
             # half-open intervals [a, b) for all bins except the last which is
-            # closed [a, b]).  Using np.nextafter(1.0+0.1, np.inf) guarantees
+            # closed [a, b]). Using np.nextafter(1.0+0.1, np.inf) guarantees
             # r = 1.0 is always counted in the bin [0.9, 1.0].
             _bins_lo = np.round(np.arange(-1.0, 1.0, 0.1), 10)
             bins_fixed = np.append(_bins_lo, np.nextafter(1.0, np.inf))
@@ -1199,7 +1298,7 @@ if nbtot > 0 and len(common_samples) > 0:
                              fontsize=6.5, fontweight='semibold',
                              color='#2c3e50')
 
-            # ── Conditional secondary log-scale Y-axis for Chart 0 ────────────
+            # ── Conditional secondary log-scale Y-axis for Chart 0 ──────────
             _nz0 = counts_fixed[counts_fixed > 0]
             if (len(_nz0) >= 2 and
                     _nz0.max() >= 20 * np.sort(_nz0)[-2]):
@@ -1217,24 +1316,28 @@ if nbtot > 0 and len(common_samples) > 0:
                     xy=(0.01, 0.97), xycoords='axes fraction',
                     fontsize=6.5, color='#7f8c8d',
                     va='top', ha='left', style='italic')
-            # ──────────────────────────────────────────────────────────────────
+            # ────────────────────────────────────────────────────────────────
 
             # Median vertical line — same style as Chart 1
             ax0.axvline(r_median, color='#2ecc71', linewidth=1.6,
                         linestyle='--', zorder=4)
 
             ax0.set_xticks(bin_centers_fixed)
-            ax0.set_xticklabels(bin_labels_fixed, rotation=45, ha='right', fontsize=7.5)
+            ax0.set_xticklabels(bin_labels_fixed, rotation=45, 
+                                ha='right', fontsize=7.5)
             ax0.set_xlim(-1.0 - step_fixed * 0.5, 1.0 + step_fixed * 0.5)
             ax0.tick_params(colors='#455a64')
-            ax0.set_xlabel('Correlation class (r)', fontsize=9, color='#1c2833', labelpad=6)
-            ax0.set_ylabel('Number of ions',        fontsize=9, color='#1c2833', labelpad=6)
+            ax0.set_xlabel('Correlation class (r)', fontsize=9,
+                           color='#1c2833', labelpad=6)
+            ax0.set_ylabel('Number of ions', fontsize=9, color='#1c2833', labelpad=6)
             ax0.set_title(
-                f'Full-Scale Correlation Histogram — fixed bins [−1.0 → 1.0], step 0.1\n'
-                f'{wf1_name}  vs  {wf2_name}  —  {n_ions} ions analysed',
+                f'Full-Scale Correlation Histogram'
+                f'— fixed bins [−1.0 → 1.0], step 0.1\n'
+                f'{wf1_name}  vs  {wf2_name}  —  {n_ion} ions analysed',
                 fontsize=9.5, fontweight='bold', color='#1c2833', pad=10
             )
-            median_handle0 = mpatches.Patch(facecolor='#2ecc71', edgecolor='white',
+            median_handle0 = mpatches.Patch(facecolor='#2ecc71',
+                                            edgecolor='white',
                                             label=f'Median = {r_median:.3f}')
             ax0.legend(handles=legend_patches + [median_handle0],
                        fontsize=7.5, loc='upper left',
@@ -1259,7 +1362,7 @@ if nbtot > 0 and len(common_samples) > 0:
                         title='Global Correlation Distribution — 20 equal-width bins',
                         xlabel='Pearson r',
                         ylabel='Number of ions',
-                        n_ions=n_ions)
+                        n_ion=n_ion)
             # Include the median entry in the legend so it remains visible on
             # this chart.  Without this, the ax.legend() call here would
             # overwrite the legend set inside _draw_histogram and drop the
@@ -1288,7 +1391,7 @@ if nbtot > 0 and len(common_samples) > 0:
             #   - Y-max is set to local_max × 1.18 (5 % head room for count
             #     labels)
             #   - If the zoom's local_max is itself >= 20× its own
-            #     second-largest bar, the conditional log twin-axis 
+            #     second-largest bar, the conditional log twin-axis
             #     (from _draw_histogram) kicks in automatically,
             #     keeping every bar readable.
             # ══════════════════════════════════════════════════════════════════
@@ -1328,7 +1431,7 @@ if nbtot > 0 and len(common_samples) > 0:
                         title='Lower-Half Zoom  —  20 bins',
                         xlabel='Pearson r',
                         ylabel='Number of ions',
-                        n_ions=len(r_lower_half),
+                        n_ion=len(r_lower_half),
                         subtitle=f'Range : [{r_min:.3f} → {r_split:.3f}]  (below split threshold)')
             # Adaptive Y-axis: scale to the local distribution (not global)
             ax_low.set_ylim(0, _adaptive_ylim(counts_low))

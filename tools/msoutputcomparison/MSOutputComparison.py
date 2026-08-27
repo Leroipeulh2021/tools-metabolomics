@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-MSOutputComparison 
+MSOutputComparison
 First version 1.0.0 : Quentin Ruin, Mélanie Pétéra — INRAE - MetaboHUB
 Second version 1.5.0: Abdou Lahat KA — INRAE - MetaboHUB
 
@@ -33,18 +33,21 @@ Version 1.5.0 Improvements:
     visible even when a single class dominates the distribution.
 """
 
+import os
+import sys
+import math
+import time
+
 import numpy as np
 import pandas as pd
-import sys
-import os
-import time
-import math
-import matplotlib.pyplot as plt
+
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+
 from matplotlib.lines import Line2D
-from weasyprint import HTML
-import seaborn as sns
 from datetime import datetime
+import seaborn as sns
+from weasyprint import HTML
 
 # =============================================================================
 # UTILITY FUNCTIONS
@@ -52,6 +55,7 @@ from datetime import datetime
 
 # UTILITY FUNCTIONS
 #######################################################################################################################################################################
+
 
 def stop_with_message(message):
     """Terminates the script execution and displays a clear error message to the user."""
@@ -61,6 +65,7 @@ def stop_with_message(message):
     print(message)
     print("="*60 + "\n")
     sys.exit(1)
+
 
 def verifier_fichier(chemin, nom_affiche):
     """Checks if a file exists and is readable."""
@@ -76,6 +81,7 @@ def verifier_fichier(chemin, nom_affiche):
             f"Path used: {chemin}\n"
             f"→ Please verify that your pre-processing pipeline successfully generated this file."
         )
+
 
 def verifier_format_tabular(chemin, nom_affiche):
     """Verifies that the file format is a valid, readable tab-separated text file."""
@@ -94,6 +100,7 @@ def verifier_format_tabular(chemin, nom_affiche):
             f"→ The file might be corrupted or in an unsupported binary format."
         )
 
+
 def verifier_colonnes(df, nom_affiche, colonnes_requises):
     """Checks if all required columns are present in the DataFrame."""
     manquantes = [c for c in colonnes_requises if c not in df.columns]
@@ -107,6 +114,7 @@ def verifier_colonnes(df, nom_affiche, colonnes_requises):
             f"  Please note that the m/z and retention time column names to\n"
             f"  look for can be personnalized in the Column Names section.\n"
         )
+
 
 def verifier_colonnes_numeriques(df, nom_affiche, colonnes_numeriques):
     """Verifies that the expected numerical columns contain valid numeric data types."""
@@ -125,6 +133,7 @@ def verifier_colonnes_numeriques(df, nom_affiche, colonnes_numeriques):
             print(f"   ⚠️   Warning: {n_invalides} non-numeric value(s) detected in "
                   f"column '{col}' of '{nom_affiche}' (coerced to NaN).")
 
+
 def verifier_coherence_dataframes(varmat, datamat, nom_varmat, nom_datamat):
     """Checks the structural consistency between variableMetadata and dataMatrix files."""
     if len(varmat) == 0:
@@ -142,12 +151,14 @@ def verifier_coherence_dataframes(varmat, datamat, nom_varmat, nom_datamat):
               f"({len(varmat)}) and '{nom_datamat}' ({len(datamat)}).\n"
               f"      Data will be processed independently (matching by index alignment).")
 
+
 def safe_log10_min(series):
     """Calculates the log10 floor of the minimum non-zero value. Returns None if all values are zero."""
     nonzero = series[series != 0].abs()
     if len(nonzero) == 0:
         return None
     return int(np.floor(np.log10(nonzero.min())))
+
 
 def safe_log10_max(series):
     """Calculates the log10 ceiling of the maximum non-zero value. Returns None if all values are zero."""
@@ -179,15 +190,15 @@ if len(sys.argv) < 12:
 # Assigning inputs to explicit variables
 path_variableMetadata1 = sys.argv[1]
 path_variableMetadata2 = sys.argv[2]
-path_DataMatrix1       = sys.argv[3]
-path_DataMatrix2       = sys.argv[4]
-tol_mz                 = float(sys.argv[5])
-tol_RT                 = float(sys.argv[6])
-wf1_name               = sys.argv[7]
-wf2_name               = sys.argv[8]
-col_mz                 = sys.argv[9]    # Target m/z column name (default: "mz")
-col_rt                 = sys.argv[10]   # Target RT column name (default: "rt")
-corr_split             = float(sys.argv[11])  # Correlation split threshold for zoom histograms (default: 0.5)
+path_DataMatrix1 = sys.argv[3]
+path_DataMatrix2 = sys.argv[4]
+tol_mz = float(sys.argv[5])
+tol_RT = float(sys.argv[6])
+wf1_name = sys.argv[7]
+wf2_name = sys.argv[8]
+col_mz = sys.argv[9]    # Target mz column name (default: "mz")
+col_rt = sys.argv[10]   # Target RT column name (default: "rt")
+corr_split = float(sys.argv[11])  # Correlation split threshold for zoom histograms (default: 0.5)
 
 # Clamp corr_split to the valid Pearson r range [-1.0, 1.0]
 corr_split = max(-1.0, min(1.0, corr_split))
@@ -215,6 +226,7 @@ for chemin, nom in [
     verifier_fichier(chemin, nom)
     verifier_format_tabular(chemin, nom)
 
+
 def charger_datamatrix(chemin, nom):
     try:
         df = pd.read_csv(chemin, sep='\t')
@@ -238,6 +250,7 @@ def charger_datamatrix(chemin, nom):
     df = df.replace({'NA': 0, 'NaN': 0}).fillna(0)
     return df
 
+
 def charger_varmetadata(chemin, nom, col_mz, col_rt):
     try:
         df = pd.read_csv(chemin, sep='\t')
@@ -254,7 +267,7 @@ def charger_varmetadata(chemin, nom, col_mz, col_rt):
         )
     verifier_colonnes(df, nom, [col_mz, col_rt])
     verifier_colonnes_numeriques(df, nom, [col_mz, col_rt])
-    
+
     # Convert numerical columns (coerce invalid entries to NaN, then replace with 0)
     df[col_mz] = pd.to_numeric(df[col_mz], errors='coerce').fillna(0)
     df[col_rt] = pd.to_numeric(df[col_rt], errors='coerce').fillna(0)
@@ -262,8 +275,8 @@ def charger_varmetadata(chemin, nom, col_mz, col_rt):
 
 pddatamat1 = charger_datamatrix(path_DataMatrix1, "dataMatrix Workflow 1")
 pddatamat2 = charger_datamatrix(path_DataMatrix2, "dataMatrix Workflow 2")
-pdvarmat1  = charger_varmetadata(path_variableMetadata1, "variableMetadata Workflow 1", col_mz, col_rt)
-pdvarmat2  = charger_varmetadata(path_variableMetadata2, "variableMetadata Workflow 2", col_mz, col_rt)
+pdvarmat1 = charger_varmetadata(path_variableMetadata1, "variableMetadata Workflow 1", col_mz, col_rt)
+pdvarmat2 = charger_varmetadata(path_variableMetadata2, "variableMetadata Workflow 2", col_mz, col_rt)
 
 verifier_coherence_dataframes(pdvarmat1, pddatamat1, "variableMetadata Workflow 1", "dataMatrix Workflow 1")
 verifier_coherence_dataframes(pdvarmat2, pddatamat2, "variableMetadata Workflow 2", "dataMatrix Workflow 2")
@@ -300,7 +313,7 @@ for i in range(len(table1)):
                      'mzdiff': np.abs(mz1 - candidats.at[j, col_mz])})
 
 table_distance = pd.DataFrame(rows).sort_values('mzdiff').reset_index(drop=True) \
-    if rows else pd.DataFrame(columns=['id1','id2','mzdiff'])
+    if rows else pd.DataFrame(columns=['id1', 'id2', 'mzdiff'])
 
 elapsed = time.time() - start_time
 print(f"   → {len(table_distance)} candidate pairs found in {elapsed:.1f}s")
@@ -363,7 +376,7 @@ pdcommon = tablecomm_final[
     (tablecomm_final['id2'] != 'no match')
 ].copy()
 
-n_paired   = len(pdcommon)
+n_paired = len(pdcommon)
 n_only_wf1 = (tablecomm_final['id2'] == 'no match').sum()
 n_only_wf2 = (tablecomm_final['id1'] == 'no match').sum()
 n_wf1_total = n_paired + n_only_wf1
@@ -374,7 +387,7 @@ print(f"   ⚠️  Unmatched in WF1  : {n_only_wf1} ({100*n_only_wf1/max(n_wf1_t
 print(f"   ⚠️  Unmatched in WF2  : {n_only_wf2} ({100*n_only_wf2/max(n_wf2_total,1):.1f}%)")
 
 # Export tabular file
-tablecomm_final.drop(['id1','id2'], axis=1, errors='ignore').to_csv("Associations.tabular", sep='\t', index=False)
+tablecomm_final.drop(['id1', 'id2'], axis=1, errors='ignore').to_csv("Associations.tabular", sep='\t', index=False)
 print("\n✅ File Associations.tabular exported successfully")
 
 elapsed = time.time() - start_time
@@ -425,7 +438,7 @@ res.write(f"""
 res.write(f"""
 <h2>1. Matching Results</h2>
 <div class="info-box">
-  The algorithm pairs each feature from Workflow 1 with the closest feature (by mass) 
+  The algorithm pairs each feature from Workflow 1 with the closest feature (by mass)
   from Workflow 2, provided they satisfy the user-defined m/z and RT tolerance thresholds.
 </div>
 <table>
@@ -443,8 +456,8 @@ res.write(f"""
 
 if n_only_wf1 > 0.3 * n_wf1_total or n_only_wf2 > 0.3 * n_wf2_total:
     res.write("""<div class="warn-box">
-    ⚠️ Warning: more than 30% of the features in at least one workflow remain unmatched. 
-    This may indicate major methodological discrepancies between the two pipelines, 
+    ⚠️ Warning: more than 30% of the features in at least one workflow remain unmatched.
+    This may indicate major methodological discrepancies between the two pipelines,
     or overly stringent tolerances. You might consider slightly increasing the thresholds.
     </div>""")
 
@@ -456,7 +469,7 @@ res.write("""<div class="info-box">
   Each axis starts with an <b>Identical</b> column/row (strict difference = 0), followed
   by intervals from <b>0</b> to the <b>tolerance values</b> chosen by the user.<br>
   Except from the ppm axis of the 3rd heatmap (which corresponds to non-overlapping intervals),
-  the intervals are cumulative (from identical to the maximum value). 
+  the intervals are cumulative (from identical to the maximum value).
   They represent <b>6 sub-intervals</b>, set regularly: equal size for the 1st heatmap,
   by order of magnitude for the 2nd heatmap (logarithmic scale).<br>
   The <b>Identical × Identical</b> cell (bottom-left) counts only features with
@@ -465,9 +478,9 @@ res.write("""<div class="info-box">
 </div>""")
 
 if n_paired > 0:
-    mzdiff_da  = pdcommon['mzdiff (Da)']
+    mzdiff_da = pdcommon['mzdiff (Da)']
     mzdiff_ppm = pdcommon['mzdiff (ppm)']
-    rtdiff     = pdcommon['rtdiff']
+    rtdiff = pdcommon['rtdiff']
 
     totaldim = len(pdcommon)
 
@@ -593,17 +606,17 @@ if n_paired > 0:
 
     # Per-level thresholds, mirroring the Da heatmap's mz_thresh / rt_thresh.
     mz_log_thresholds = [tol_mz * (10 ** e) for e in LOG_EXPONENTS_LOG]
-    rt_log_thresholds = [tol_RT  * (10 ** e) for e in LOG_EXPONENTS_LOG]
+    rt_log_thresholds = [tol_RT * (10 ** e) for e in LOG_EXPONENTS_LOG]
 
     mzdiff_da_abs = mzdiff_da.abs()
-    rtdiff_abs    = rtdiff.abs()
+    rtdiff_abs = rtdiff.abs()
 
     # Same (N_LEVELS+1) × (N_LEVELS+1) shape as arr1 — the extra row/column
     # at index 0 represents strict exact matches (difference == 0), providing
     # the same "Identical" definition as the Da heatmap.
     arr_log = np.zeros((N_LOG + 1, N_LOG + 1))
     mzdiff_exact = (mzdiff_da_abs == 0)
-    rtdiff_exact  = (rtdiff_abs  == 0)
+    rtdiff_exact = (rtdiff_abs == 0)
     for i in range(N_LOG + 1):
         if i == 0:
             mz_mask = mzdiff_exact
@@ -813,9 +826,9 @@ if nbtot > 0 and len(common_samples) > 0:
       between the two workflows, for paired ions only.
     </div>""")
 
-    n1n2   = int(((pddatamat1com.values == 0) & (pddatamat2com.values == 0)).sum())
-    n1nn2  = int(((pddatamat1com.values == 0) & (pddatamat2com.values != 0)).sum())
-    nn1n2  = int(((pddatamat1com.values != 0) & (pddatamat2com.values == 0)).sum())
+    n1n2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values == 0)).sum())
+    n1nn2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values != 0)).sum())
+    nn1n2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values == 0)).sum())
     nn1nn2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values != 0)).sum())
     nnegal = int(((pddatamat1com.values != 0) & (pddatamat2com.values != 0) &
                   (pddatamat1com.values == pddatamat2com.values)).sum())
@@ -1001,9 +1014,9 @@ if nbtot > 0 and len(common_samples) > 0:
 
             def color_for_r(r_val):
                 """Return the bar colour for a given Pearson r value."""
-                if r_val >= 0.80:  return PALETTE['strong']
-                if r_val >= 0.50:  return PALETTE['moderate']
-                if r_val >= 0.30:  return PALETTE['weak']
+                if r_val >= 0.80: return PALETTE['strong']
+                if r_val >= 0.50: return PALETTE['moderate']
+                if r_val >= 0.30: return PALETTE['weak']
                 return PALETTE['poor']
 
             # ── Shared aesthetic helper ───────────────────────────────────────
@@ -1126,11 +1139,11 @@ if nbtot > 0 and len(common_samples) > 0:
                 return counts, edges
 
             # ── Key statistics used across all three charts ───────────────────
-            r_min    = float(r_vals.min())
-            r_max    = float(r_vals.max())
+            r_min = float(r_vals.min())
+            r_max = float(r_vals.max())
             r_median = float(np.median(r_vals))
-            n_ions   = len(r_vals)
-            N_BINS   = 20   # fixed by specification
+            n_ions = len(r_vals)
+            N_BINS = 20   # fixed by specification
 
             # Clamp the user-defined split threshold to the actual data range so
             # that both zoom histograms always contain at least one data point.
@@ -1155,9 +1168,9 @@ if nbtot > 0 and len(common_samples) > 0:
             step_fixed = 0.1
             # Use true r-value centres so the x-axis matches the other charts
             bin_centers_fixed = (_bins_lo + (_bins_lo + step_fixed)) / 2
-            bin_labels_fixed  = [f'{_bins_lo[i]:.1f}–{min(_bins_lo[i]+step_fixed, 1.0):.1f}'
+            bin_labels_fixed = [f'{_bins_lo[i]:.1f}–{min(_bins_lo[i]+step_fixed, 1.0):.1f}'
                                   for i in range(len(_bins_lo))]
-            bar_colors_fixed  = [color_for_r(c) for c in bin_centers_fixed]
+            bar_colors_fixed = [color_for_r(c) for c in bin_centers_fixed]
 
             fig0, ax0 = plt.subplots(figsize=(11, 4.5))
             fig0.patch.set_facecolor('#ffffff')
@@ -1348,11 +1361,11 @@ if nbtot > 0 and len(common_samples) > 0:
             res.write('<img src="corr_histogram_zooms.png">')
 
             # ── Summary statistics table ──────────────────────────────────────
-            r_mean     = float(np.nanmean(r_vals))
-            n_strong   = int((r_vals >= 0.80).sum())
+            r_mean = float(np.nanmean(r_vals))
+            n_strong = int((r_vals >= 0.80).sum())
             n_moderate = int(((r_vals >= 0.50) & (r_vals < 0.80)).sum())
-            n_weak     = int(((r_vals >= 0.30) & (r_vals < 0.50)).sum())
-            n_poor     = int((r_vals < 0.30).sum())
+            n_weak = int(((r_vals >= 0.30) & (r_vals < 0.50)).sum())
+            n_poor = int((r_vals < 0.30).sum())
 
             if r_mean < 0.5:
                 res.write(f"""<div class="warn-box">

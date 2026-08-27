@@ -37,15 +37,14 @@ import os
 import sys
 import math
 import time
-
-import numpy as np
-import pandas as pd
+from datetime import datetime
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
 from matplotlib.lines import Line2D
-from datetime import datetime
+
+import numpy as np
+import pandas as pd
 import seaborn as sns
 from weasyprint import HTML
 
@@ -208,7 +207,7 @@ corr_split = max(-1.0, min(1.0, corr_split))
 # =============================================================================
 
 print("\n" + "="*60)
-print(f"  MS Output Comparison")
+print("  MS Output Comparison")
 print(f"  {wf1_name}  VS  {wf2_name}")
 print(f"  m/z Tolerance: {tol_mz} Da  |  RT Tolerance: {tol_RT}")
 print(f"  m/z Column   : '{col_mz}'    |  RT Column   : '{col_rt}'")
@@ -756,7 +755,7 @@ if n_paired > 0:
                 xticklabels=x_labels_rt, ax=ax_ppm, square=True)
     ax_ppm.invert_yaxis()   # ascending order: Identical at bottom, > 50 ppm at top
     ax_ppm.set_title(
-        f'm/z tolerance (ppm) — fixed analytical classes',
+        'm/z tolerance (ppm) — fixed analytical classes',
         fontsize=9
     )
     ax_ppm.set_xlabel(f'RT tolerance — full = {tol_RT}', fontsize=8)
@@ -905,7 +904,7 @@ if nbtot > 0 and len(common_samples) > 0:
             Line2D([0], [0], color='navy', lw=3),
             Line2D([0], [0], color='firebrick', lw=3)
         ]
-        axs.legend(legend_lines, [f'WF1 > WF2', f'WF1 < WF2'], fontsize=8)
+        axs.legend(legend_lines, ['WF1 > WF2', 'WF1 < WF2'], fontsize=8)
         fig.tight_layout()
         fig.savefig('histo_intensity.png', bbox_inches='tight', dpi=100)
         plt.close()
@@ -1038,7 +1037,7 @@ if nbtot > 0 and len(common_samples) > 0:
                 ax.set_ylabel(ylabel, fontsize=9, color='#1c2833', labelpad=6)
 
             def _draw_histogram(ax, r_subset, r_min, r_max, n_bins=20,
-                                 annotate_median=True, n_ions_total=None):
+                                annotate_median=True, n_ions_total=None):
                 """
                 Draw a professional histogram on `ax` with exactly `n_bins` bins
                 spanning [r_min, r_max].
@@ -1103,7 +1102,6 @@ if nbtot > 0 and len(common_samples) > 0:
                         nonzero_counts.max() >= _LOG_SKEW_THRESHOLD *
                         np.sort(nonzero_counts)[-2]):
                     ax_log = ax.twinx()
-                    nonzero_mask = counts > 0
                     ax_log.set_yscale('log')
                     ax_log.set_ylim(bottom=0.8)
                     ax_log.set_ylabel('Count (log scale)', fontsize=7.5,
@@ -1169,7 +1167,7 @@ if nbtot > 0 and len(common_samples) > 0:
             # Use true r-value centres so the x-axis matches the other charts
             bin_centers_fixed = (_bins_lo + (_bins_lo + step_fixed)) / 2
             bin_labels_fixed = [f'{_bins_lo[i]:.1f}–{min(_bins_lo[i]+step_fixed, 1.0):.1f}'
-                                  for i in range(len(_bins_lo))]
+                                for i in range(len(_bins_lo))]
             bar_colors_fixed = [color_for_r(c) for c in bin_centers_fixed]
 
             fig0, ax0 = plt.subplots(figsize=(11, 4.5))
@@ -1313,7 +1311,7 @@ if nbtot > 0 and len(common_samples) > 0:
 
             # — Lower zoom: [r_min → r_split] —
             counts_low, _ = _draw_histogram(ax_low, r_lower_half, r_min, r_split,
-                            n_bins=N_BINS, annotate_median=False)
+                                            n_bins=N_BINS, annotate_median=False)
             _style_axis(ax_low,
                         title='Lower-Half Zoom  —  20 bins',
                         xlabel='Pearson r',
@@ -1332,7 +1330,7 @@ if nbtot > 0 and len(common_samples) > 0:
 
             # — Upper zoom: [r_split → r_max] —
             counts_high, _ = _draw_histogram(ax_high, r_upper_half, r_split, r_max,
-                            n_bins=N_BINS, annotate_median=False)
+                                             n_bins=N_BINS, annotate_median=False)
             _style_axis(ax_high,
                         title='Upper-Half Zoom  —  20 bins',
                         xlabel='Pearson r',
@@ -1408,6 +1406,6 @@ HTML('res.html').write_pdf('associations_quality.pdf')
 
 print("\n" + "="*60)
 print("✅ Analysis complete!")
-print(f"   → Associations.tabular       (full association table)")
-print(f"   → associations_quality.pdf   (quality report)")
+print("   → Associations.tabular       (full association table)")
+print("   → associations_quality.pdf   (quality report)")
 print("="*60 + "\n")

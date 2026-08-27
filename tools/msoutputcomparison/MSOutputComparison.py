@@ -1017,11 +1017,11 @@ if nbtot > 0 and len(common_samples) > 0:
 
             def color_for_r(r_val):
                 """Return the bar colour for a given Pearson r value."""
-                if r_val >= 0.80: 
+                if r_val >= 0.80:
                     return PALETTE['strong']
-                if r_val >= 0.50: 
+                if r_val >= 0.50:
                     return PALETTE['moderate']
-                if r_val >= 0.30: 
+                if r_val >= 0.30:
                     return PALETTE['weak']
                 return PALETTE['poor']
 
@@ -1264,10 +1264,11 @@ if nbtot > 0 and len(common_samples) > 0:
             # this chart.  Without this, the ax.legend() call here would
             # overwrite the legend set inside _draw_histogram and drop the
             # median handle that was added there.
-            median_handle1 = mpatches.Patch(facecolor='#2ecc71', edgecolor='white',
+            median_handle1 = mpatches.Patch(facecolor='#2ecc71',
+                                            edgecolor='white',
                                             label=f'Median = {r_median:.3f}')
-            ax1_hist.legend(handles=legend_patches + [median_handle1], fontsize=7.5,
-                            loc='upper left', framealpha=0.85,
+            ax1_hist.legend(handles=legend_patches + [median_handle1],
+                            fontsize=7.5, loc='upper left', framealpha=0.85,
                             edgecolor='#b0bec5', title='Correlation level',
                             title_fontsize=7.5)
 
@@ -1284,10 +1285,12 @@ if nbtot > 0 and len(common_samples) > 0:
             # the split line is visible in both charts.
             #
             # v3+: each zoom uses a fully adaptive Y-axis:
-            #   - Y-max is set to local_max × 1.18 (5 % head room for count labels)
-            #   - If the zoom's local_max is itself >= 20× its own second-largest
-            #     bar, the conditional log twin-axis (from _draw_histogram) kicks
-            #     in automatically, keeping every bar readable.
+            #   - Y-max is set to local_max × 1.18 (5 % head room for count
+            #     labels)
+            #   - If the zoom's local_max is itself >= 20× its own
+            #     second-largest bar, the conditional log twin-axis 
+            #     (from _draw_histogram) kicks in automatically,
+            #     keeping every bar readable.
             # ══════════════════════════════════════════════════════════════════
             r_lower_half = r_vals[r_vals <= r_split]
             r_upper_half = r_vals[r_vals >= r_split]
@@ -1299,7 +1302,7 @@ if nbtot > 0 and len(common_samples) > 0:
             fig23.patch.set_facecolor('#ffffff')
             fig23.subplots_adjust(top=0.82)
 
-            # ── helper: compute adaptive Y ceiling for a zoom axis ────────────
+            # ── helper: compute adaptive Y ceiling for a zoom axis ───
             def _adaptive_ylim(counts_arr, head_room=1.18):
                 """
                 Return an appropriate Y ceiling for a zoom histogram.
@@ -1317,18 +1320,21 @@ if nbtot > 0 and len(common_samples) > 0:
                 return max(local_max * head_room, 1)
 
             # — Lower zoom: [r_min → r_split] —
-            counts_low, _ = _draw_histogram(ax_low, r_lower_half, r_min, r_split,
-                                            n_bins=N_BINS, annotate_median=False)
+            counts_low, _ = _draw_histogram(ax_low, r_lower_half,
+                                            r_min, r_split,
+                                            n_bins=N_BINS,
+                                            annotate_median=False)
             _style_axis(ax_low,
                         title='Lower-Half Zoom  —  20 bins',
                         xlabel='Pearson r',
                         ylabel='Number of ions',
                         n_ions=len(r_lower_half),
                         subtitle=f'Range : [{r_min:.3f} → {r_split:.3f}]  (below split threshold)')
-            # Adaptive Y-axis: scale to the local distribution, not the global one
+            # Adaptive Y-axis: scale to the local distribution (not global)
             ax_low.set_ylim(0, _adaptive_ylim(counts_low))
             # Shade the lower zone lightly
-            ax_low.axvspan(r_min, r_split, alpha=0.05, color='#c0392b', zorder=1)
+            ax_low.axvspan(r_min, r_split, alpha=0.05,
+                           color='#c0392b', zorder=1)
             ax_low.axvline(r_split, color='#7f8c8d', linewidth=1.2,
                            linestyle=':', zorder=4,
                            label=f'Split threshold = {r_split:.3f}')
@@ -1336,18 +1342,21 @@ if nbtot > 0 and len(common_samples) > 0:
                           framealpha=0.85, edgecolor='#b0bec5')
 
             # — Upper zoom: [r_split → r_max] —
-            counts_high, _ = _draw_histogram(ax_high, r_upper_half, r_split, r_max,
-                                             n_bins=N_BINS, annotate_median=False)
+            counts_high, _ = _draw_histogram(ax_high, r_upper_half,
+                                             r_split, r_max,
+                                             n_bins=N_BINS,
+                                             annotate_median=False)
             _style_axis(ax_high,
                         title='Upper-Half Zoom  —  20 bins',
                         xlabel='Pearson r',
                         ylabel='Number of ions',
-                        n_ions=len(r_upper_half),
+                        n_ion=len(r_upper_half),
                         subtitle=f'Range : [{r_split:.3f} → {r_max:.3f}]  (above split threshold)')
-            # Adaptive Y-axis: scale to the local distribution, not the global one
+            # Adaptive Y-axis: scale to the local distribution (not global)
             ax_high.set_ylim(0, _adaptive_ylim(counts_high))
             # Shade the upper zone lightly
-            ax_high.axvspan(r_split, r_max, alpha=0.05, color='#1a6faf', zorder=1)
+            ax_high.axvspan(r_split, r_max, alpha=0.05,
+                            color='#1a6faf', zorder=1)
             ax_high.axvline(r_split, color='#7f8c8d', linewidth=1.2,
                             linestyle=':', zorder=4,
                             label=f'Split threshold = {r_split:.3f}')
@@ -1357,7 +1366,7 @@ if nbtot > 0 and len(common_samples) > 0:
             fig23.suptitle(
                 f'Analytical Zoom Views — Split at r = {r_split:.2f}'
                 f'  (configurable threshold, default 0.50)\n'
-                f'Y-axis independently scaled to each half for maximum readability',
+                f'Y-axis independently scaled to each half for readability',
                 fontsize=10, fontweight='bold', color='#1c2833', y=0.99
             )
             fig23.savefig('corr_histogram_zooms.png', bbox_inches='tight',
@@ -1365,7 +1374,7 @@ if nbtot > 0 and len(common_samples) > 0:
             plt.close()
             res.write('<img src="corr_histogram_zooms.png">')
 
-            # ── Summary statistics table ──────────────────────────────────────
+            # ── Summary statistics table ──────────────────────
             r_mean = float(np.nanmean(r_vals))
             n_strong = int((r_vals >= 0.80).sum())
             n_moderate = int(((r_vals >= 0.50) & (r_vals < 0.80)).sum())
@@ -1374,26 +1383,28 @@ if nbtot > 0 and len(common_samples) > 0:
 
             if r_mean < 0.5:
                 res.write(f"""<div class="warn-box">
-                ⚠️ The mean correlation between the two workflows is low (mean r = {r_mean:.3f}).<br>
-                This may indicate significant differences in pre-processing or normalisation strategies.
+                ⚠️ The mean correlation between the two workflows is low
+                (mean r = {r_mean:.3f}).<br>
+                This may indicate significant differences
+                in pre-processing or normalisation strategies.
                 </div>""")
 
             res.write(f"""
             <table>
               <tr><th>Statistic</th><th>Value</th></tr>
-              <tr><td>Ions analysed</td><td>{n_ions}</td></tr>
+              <tr><td>Ions analysed</td><td>{n_ion}</td></tr>
               <tr><td>Mean r</td><td>{r_mean:.3f}</td></tr>
               <tr><td>Median r</td><td>{r_median:.3f}</td></tr>
               <tr><td>Min r</td><td>{r_min:.3f}</td></tr>
               <tr><td>Max r</td><td>{r_max:.3f}</td></tr>
               <tr><td>Strong correlation (r ≥ 0.80)</td>
-                  <td>{n_strong} ({round(100*n_strong/n_ions,1)}%)</td></tr>
+                  <td>{n_strong} ({round(100*n_strong/n_ion,1)}%)</td></tr>
               <tr><td>Moderate correlation (0.50 ≤ r &lt; 0.80)</td>
-                  <td>{n_moderate} ({round(100*n_moderate/n_ions,1)}%)</td></tr>
+                  <td>{n_moderate} ({round(100*n_moderate/n_ion,1)}%)</td></tr>
               <tr><td>Weak correlation (0.30 ≤ r &lt; 0.50)</td>
-                  <td>{n_weak} ({round(100*n_weak/n_ions,1)}%)</td></tr>
+                  <td>{n_weak} ({round(100*n_weak/n_ion,1)}%)</td></tr>
               <tr><td>Poor / negative correlation (r &lt; 0.30)</td>
-                  <td>{n_poor} ({round(100*n_poor/n_ions,1)}%)</td></tr>
+                  <td>{n_poor} ({round(100*n_poor/n_ion,1)}%)</td></tr>
             </table>
             """)
 

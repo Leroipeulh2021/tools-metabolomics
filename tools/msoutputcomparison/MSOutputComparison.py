@@ -35,7 +35,6 @@ Version 1.5.0 Improvements:
 
 import os
 import sys
-import math
 import time
 from datetime import datetime
 
@@ -44,8 +43,11 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 import numpy as np
+
 import pandas as pd
+
 import seaborn as sns
+
 from weasyprint import HTML
 
 # =============================================================================
@@ -166,6 +168,7 @@ def safe_log10_max(series):
         return None
     return int(np.ceil(np.log10(nonzero.max()))) + 1
 
+
 # =============================================================================
 # ARGUMENT PARSING
 # =============================================================================
@@ -271,6 +274,7 @@ def charger_varmetadata(chemin, nom, col_mz, col_rt):
     df[col_mz] = pd.to_numeric(df[col_mz], errors='coerce').fillna(0)
     df[col_rt] = pd.to_numeric(df[col_rt], errors='coerce').fillna(0)
     return df
+
 
 pddatamat1 = charger_datamatrix(path_DataMatrix1, "dataMatrix Workflow 1")
 pddatamat2 = charger_datamatrix(path_DataMatrix2, "dataMatrix Workflow 2")
@@ -1013,9 +1017,12 @@ if nbtot > 0 and len(common_samples) > 0:
 
             def color_for_r(r_val):
                 """Return the bar colour for a given Pearson r value."""
-                if r_val >= 0.80: return PALETTE['strong']
-                if r_val >= 0.50: return PALETTE['moderate']
-                if r_val >= 0.30: return PALETTE['weak']
+                if r_val >= 0.80: 
+                    return PALETTE['strong']
+                if r_val >= 0.50: 
+                    return PALETTE['moderate']
+                if r_val >= 0.30: 
+                    return PALETTE['weak']
                 return PALETTE['poor']
 
             # ── Shared aesthetic helper ───────────────────────────────────────

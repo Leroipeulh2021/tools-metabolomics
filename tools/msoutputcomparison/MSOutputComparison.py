@@ -439,7 +439,8 @@ print(f"   ⚠️  Unmatched in WF2  : {n_only_wf2} ({100*n_only_wf2/max(n_wf2_t
 
 # Export tabular file
 tablecomm_final.drop(['id1', 'id2'], axis=1,
-                     errors='ignore').to_csv("Associations.tabular", sep='\t', index=False)
+                     errors='ignore').to_csv("Associations.tabular",
+                                             sep='\t', index=False)
 print("\n✅ File Associations.tabular exported successfully")
 
 elapsed = time.time() - start_time
@@ -492,7 +493,7 @@ res.write(f"""
 <h2>1. Matching Results</h2>
 <div class="info-box">
   The algorithm pairs each feature from Workflow 1 with the closest
-  feature (by mass) from Workflow 2, provided they satisfy the 
+  feature (by mass) from Workflow 2, provided they satisfy the
   user-defined m/z and RT tolerance thresholds.
 </div>
 <table>
@@ -587,7 +588,7 @@ if n_paired > 0:
         Generate n_levels tick labels: each label = k/n_levels × tol_val.
         e.g. for tol=0.02 Da and 6 levels → ['0.003', '0.007', '0.010',
                                                '0.013', '0.017', '0.020 (tol)']
-        The last label is annotated with '(tol)' to highlight the 
+        The last label is annotated with '(tol)' to highlight the
         full tolerance.
         """
         labels = []
@@ -733,7 +734,7 @@ if n_paired > 0:
 
     # ── Side-by-side figure ────────
     # Heatmap 1 (Da) on the left, Heatmap 3 (Log) on the right
-    # Both heatmaps share the same computation logic; side-by-side 
+    # Both heatmaps share the same computation logic; side-by-side
     # display makes it straightforward to verify that differences
     # stem only from the scale change.
     fig_side, (ax_da_side, ax_log_side) = plt.subplots(
@@ -754,7 +755,8 @@ if n_paired > 0:
         fontsize=9
     )
     ax_da_side.set_xlabel(f'RT tolerance — full = {tol_RT}', fontsize=8)
-    ax_da_side.set_ylabel(f'm/z (Da) — full tolerance = {tol_mz} Da', fontsize=8)
+    ax_da_side.set_ylabel(f'm/z (Da) — full tolerance = {tol_mz} Da',
+                          fontsize=8)
 
     # Right panel — logarithmic heatmap
     sns.heatmap(arr_log, annot=True, cmap=cmap, linecolor='white',
@@ -1014,7 +1016,8 @@ if nbtot > 0 and len(common_samples) > 0:
             ax1.bar(x + 0.22, hist2, width=0.44, color='darkorange',
                     edgecolor='white', zorder=3, alpha=0.9, label=wf2_name)
             ax1.set_xticks(x)
-            ax1.set_xticklabels([f'10e{int(np.ceil(np.log10(bins[i+1])))}' for i in range(len(bins)-1)])
+            ax1.set_xticklabels([f'10e{int(np.ceil(np.log10(bins[i+1])))}'
+                                 for i in range(len(bins)-1)])
             ax1.set_title("Intensity distribution by order of magnitude",
                           fontsize=10)
             ax1.set_xlabel("Order of magnitude", fontsize=9)
@@ -1081,7 +1084,7 @@ if nbtot > 0 and len(common_samples) > 0:
         if len(ion_r_values) == 0:
             res.write("""<div class="warn-box">
             ⚠️ Not enough non-zero data points per ion to compute
-            the correlation (minimum of 3 non-zero samples required 
+            the correlation (minimum of 3 non-zero samples required
             per ion).<br>
             Please verify that your data contain a sufficient number
             of common samples with non-zero intensities.
@@ -1105,11 +1108,14 @@ if nbtot > 0 and len(common_samples) > 0:
                 mpatches.Patch(facecolor=PALETTE['strong'],
                                edgecolor='white', label='r ≥ 0.80  —  Strong'),
                 mpatches.Patch(facecolor=PALETTE['moderate'],
-                               edgecolor='white', label='0.50 ≤ r < 0.80  —  Moderate'),
+                               edgecolor='white',
+                               label='0.50 ≤ r < 0.80  —  Moderate'),
                 mpatches.Patch(facecolor=PALETTE['weak'],
-                               edgecolor='white', label='0.30 ≤ r < 0.50  —  Weak'),
+                               edgecolor='white',
+                               label='0.30 ≤ r < 0.50  —  Weak'),
                 mpatches.Patch(facecolor=PALETTE['poor'],
-                               edgecolor='white', label='r < 0.30  —  Poor / Negative'),
+                               edgecolor='white',
+                               label='r < 0.30  —  Poor / Negative'),
             ]
 
             def color_for_r(r_val):
@@ -1323,13 +1329,14 @@ if nbtot > 0 and len(common_samples) > 0:
                         linestyle='--', zorder=4)
 
             ax0.set_xticks(bin_centers_fixed)
-            ax0.set_xticklabels(bin_labels_fixed, rotation=45, 
+            ax0.set_xticklabels(bin_labels_fixed, rotation=45,
                                 ha='right', fontsize=7.5)
             ax0.set_xlim(-1.0 - step_fixed * 0.5, 1.0 + step_fixed * 0.5)
             ax0.tick_params(colors='#455a64')
             ax0.set_xlabel('Correlation class (r)', fontsize=9,
                            color='#1c2833', labelpad=6)
-            ax0.set_ylabel('Number of ions', fontsize=9, color='#1c2833', labelpad=6)
+            ax0.set_ylabel('Number of ions', fontsize=9,
+                           color='#1c2833', labelpad=6)
             ax0.set_title(
                 f'Full-Scale Correlation Histogram'
                 f'— fixed bins [−1.0 → 1.0], step 0.1\n'

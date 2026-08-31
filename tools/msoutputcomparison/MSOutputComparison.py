@@ -364,7 +364,8 @@ for i in range(len(table1)):
         rows.append({'id1': i, 'id2': j,
                      'mzdiff': np.abs(mz1 - candidats.at[j, col_mz])})
 
-table_distance = pd.DataFrame(rows).sort_values('mzdiff').reset_index(drop=True) \
+table_distance = pd.DataFrame(rows).sort_values('mzdiff')\
+                   .reset_index(drop=True) \
     if rows else pd.DataFrame(columns=['id1', 'id2', 'mzdiff'])
 
 elapsed = time.time() - start_time
@@ -584,9 +585,11 @@ if n_paired > 0:
         mz_exact = (mz_abs == 0)
         rt_exact = (rt_abs == 0)
         for i in range(size):
-            mz_mask = mz_exact if i == 0 else (mz_abs <= i / n_levels * tol_mz_val)
+            mz_mask = mz_exact \
+                if i == 0 else (mz_abs <= i / n_levels * tol_mz_val)
             for j in range(size):
-                rt_mask = rt_exact if j == 0 else (rt_abs <= j / n_levels * tol_rt_val)
+                rt_mask = rt_exact \
+                    if j == 0 else (rt_abs <= j / n_levels * tol_rt_val)
                 arr[i, j] = 100 * (mz_mask & rt_mask).sum() / totaldim
         return arr
 
@@ -1313,7 +1316,8 @@ if nbtot > 0 and len(common_samples) > 0:
             bars0 = ax0.bar(bin_centers_fixed, counts_fixed,
                             color=bar_colors_fixed, edgecolor='white',
                             linewidth=0.6, zorder=3, width=step_fixed * 0.88)
-            y_off0 = max(counts_fixed) * 0.015 if counts_fixed.max() > 0 else 0.1
+            y_off0 = max(counts_fixed) * 0.015 \
+                if counts_fixed.max() > 0 else 0.1
             for bar, cnt in zip(bars0, counts_fixed):
                 if cnt > 0:
                     ax0.text(bar.get_x() + bar.get_width() / 2,

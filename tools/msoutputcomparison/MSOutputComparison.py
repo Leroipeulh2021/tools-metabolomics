@@ -337,8 +337,10 @@ id_col_vm2 = pdvarmat2.columns[0]
 id_col_dm1 = pddatamat1.columns[0]
 id_col_dm2 = pddatamat2.columns[0]
 
-print(f"   ✅ Workflow 1: {len(pdvarmat1)} features, {len(pddatamat1.columns)-1} samples")
-print(f"   ✅ Workflow 2: {len(pdvarmat2)} features, {len(pddatamat2.columns)-1} samples")
+print(f"   ✅ Workflow 1: {len(pdvarmat1)} features, "
+      f"{len(pddatamat1.columns)-1} samples")
+print(f"   ✅ Workflow 2: {len(pdvarmat2)} features, "
+      f"{len(pddatamat2.columns)-1} samples")
 
 # =============================================================================
 # DISTANCE COMPUTATION & FEATURE MATCHING
@@ -434,8 +436,10 @@ n_wf1_total = n_paired + n_only_wf1
 n_wf2_total = n_paired + n_only_wf2
 
 print(f"   ✅ Paired features    : {n_paired}")
-print(f"   ⚠️  Unmatched in WF1  : {n_only_wf1} ({100*n_only_wf1/max(n_wf1_total,1):.1f}%)")
-print(f"   ⚠️  Unmatched in WF2  : {n_only_wf2} ({100*n_only_wf2/max(n_wf2_total,1):.1f}%)")
+print(f"   ⚠️  Unmatched in WF1  : {n_only_wf1}"
+      f" ({100*n_only_wf1/max(n_wf1_total,1):.1f}%)")
+print(f"   ⚠️  Unmatched in WF2  : {n_only_wf2}"
+      f" ({100*n_only_wf2/max(n_wf2_total,1):.1f}%)")
 
 # Export tabular file
 tablecomm_final.drop(['id1', 'id2'], axis=1,
@@ -751,7 +755,8 @@ if n_paired > 0:
                 xticklabels=x_labels_rt, ax=ax_da_side, square=True)
     ax_da_side.invert_yaxis()
     ax_da_side.set_title(
-        f'm/z tolerance (Da) — {N_LEVELS} levels\nFull tolerance = {tol_mz} Da',
+        f'm/z tolerance (Da) — {N_LEVELS} levels\n'
+        f'Full tolerance = {tol_mz} Da',
         fontsize=9
     )
     ax_da_side.set_xlabel(f'RT tolerance — full = {tol_RT}', fontsize=8)
@@ -885,10 +890,12 @@ if n_paired > 0:
 
 # --- Intensity extraction for common paired features ---
 pddatamat1com = pddatamat1.loc[pdcommon['id1'].astype(int)][
-    np.sort(pddatamat1.columns.drop(id_col_dm1).intersection(pddatamat2.columns.drop(id_col_dm2)))
+    np.sort(pddatamat1.columns.drop(id_col_dm1)
+            .intersection(pddatamat2.columns.drop(id_col_dm2)))
 ]
 pddatamat2com = pddatamat2.loc[pdcommon['id2'].astype(int)][
-    np.sort(pddatamat1.columns.drop(id_col_dm1).intersection(pddatamat2.columns.drop(id_col_dm2)))
+    np.sort(pddatamat1.columns.drop(id_col_dm1)
+            .intersection(pddatamat2.columns.drop(id_col_dm2)))
 ]
 
 nbtot = np.size(pddatamat1com)
@@ -901,10 +908,14 @@ if nbtot > 0 and len(common_samples) > 0:
       samples</b> between the two workflows, for paired ions only.
     </div>""")
 
-    n1n2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values == 0)).sum())
-    n1nn2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values != 0)).sum())
-    nn1n2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values == 0)).sum())
-    nn1nn2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values != 0)).sum())
+    n1n2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values == 0))
+               .sum())
+    n1nn2 = int(((pddatamat1com.values == 0) & (pddatamat2com.values != 0))
+                .sum())
+    nn1n2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values == 0))
+                .sum())
+    nn1nn2 = int(((pddatamat1com.values != 0) & (pddatamat2com.values != 0))
+                 .sum())
     nnegal = int(((pddatamat1com.values != 0) & (pddatamat2com.values != 0) &
                   (pddatamat1com.values == pddatamat2com.values)).sum())
 
@@ -981,7 +992,8 @@ if nbtot > 0 and len(common_samples) > 0:
 
         axs.set_xlabel("Order of magnitude (powers of 10)", fontsize=9)
         axs.set_ylabel("Relative intensity difference (%)", fontsize=9)
-        axs.set_title(f"Distribution of intensity differences\n{wf1_name} vs {wf2_name}",
+        axs.set_title(f"Distribution of intensity "
+                      f"differences\n{wf1_name} vs {wf2_name}",
                       fontsize=10)
 
         legend_lines = [
@@ -1138,7 +1150,8 @@ if nbtot > 0 and len(common_samples) > 0:
                 ax.spines[['top', 'right']].set_visible(False)
                 ax.spines[['left', 'bottom']].set_color('#90a4ae')
                 ax.tick_params(colors='#455a64', labelsize=7.5)
-                full_title = f"{title}\n{wf1_name}  vs  {wf2_name}  —  {n_ion} ions analysed"
+                full_title = f"{title}\n{wf1_name}  vs  {wf2_name}"
+                             f"  —  {n_ion} ions analysed"
                 if subtitle:
                     full_title += f"\n{subtitle}"
                 ax.set_title(full_title, fontsize=9.5, fontweight='bold',
@@ -1222,7 +1235,8 @@ if nbtot > 0 and len(common_samples) > 0:
                     ax_log.spines['top'].set_visible(False)
                     # Note explaining the dual scale
                     ax.annotate(
-                        'Skewed distribution — log scale (right axis) shows low-count classes',
+                        ('Skewed distribution — log scale (right axis)'
+                         ' shows low-count classes'),
                         xy=(0.01, 0.97), xycoords='axes fraction',
                         fontsize=6.5, color='#7f8c8d',
                         va='top', ha='left', style='italic')
@@ -1318,7 +1332,8 @@ if nbtot > 0 and len(common_samples) > 0:
                 ax0_log.spines['right'].set_color('#b0bec5')
                 ax0_log.spines['top'].set_visible(False)
                 ax0.annotate(
-                    'Skewed distribution — log scale (right axis) shows low-count classes',
+                    ('Skewed distribution — log scale (right axis)'
+                     ' shows low-count classes'),
                     xy=(0.01, 0.97), xycoords='axes fraction',
                     fontsize=6.5, color='#7f8c8d',
                     va='top', ha='left', style='italic')
@@ -1464,7 +1479,7 @@ if nbtot > 0 and len(common_samples) > 0:
                         ylabel='Number of ions',
                         n_ion=len(r_upper_half),
                         subtitle=f'Range : [{r_split:.3f} → {r_max:.3f}]'
-                                f'  (above split threshold)')
+                                 f'  (above split threshold)')
             # Adaptive Y-axis: scale to the local distribution (not global)
             ax_high.set_ylim(0, _adaptive_ylim(counts_high))
             # Shade the upper zone lightly

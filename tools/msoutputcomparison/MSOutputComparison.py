@@ -461,12 +461,15 @@ res = open("res.html", "w", encoding="utf-8")
 res.write("""<html lang="en">
 <head><meta charset="utf-8">
 <style>
-  body { font-family: Arial, sans-serif; margin: 40px; color: #222; font-size: 13px; }
-  h1 { color: #2c5f8a; border-bottom: 3px solid #2c5f8a; padding-bottom: 8px; margin-bottom: 12px; }
+  body { font-family: Arial, sans-serif; margin: 40px; color: #222;
+         font-size: 13px; }
+  h1 { color: #2c5f8a; border-bottom: 3px solid #2c5f8a;
+       padding-bottom: 8px; margin-bottom: 12px; }
   h2 { color: #2c5f8a; margin-top: 20px; margin-bottom: 6px; }
   h3 { color: #3a7abf; }
   table { border-collapse: collapse; margin: 8px 0; width: auto; }
-  th { background: #2c5f8a; color: white; padding: 7px 14px; text-align: center; }
+  th { background: #2c5f8a; color: white; padding: 7px 14px;
+       text-align: center; }
   td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
   tr:nth-child(even) td { background: #f4f8fc; }
   .info-box { background: #eef4fb; border-left: 4px solid #2c5f8a;
@@ -815,12 +818,14 @@ if n_paired > 0:
         if i == 0:
             ppm_mask = (ppm_abs == 0)
         elif i < len(PPM_BOUNDS):
-            ppm_mask = (ppm_abs > PPM_BOUNDS[i - 1]) & (ppm_abs <= PPM_BOUNDS[i])
+            ppm_mask = ((ppm_abs > PPM_BOUNDS[i - 1])
+                        & (ppm_abs <= PPM_BOUNDS[i]))
         else:
             ppm_mask = ppm_abs > PPM_BOUNDS[-1]
         for j in range(N_LEVELS):
             rt_thresh = (j + 1) / N_LEVELS * tol_RT
-            arr2[i, j] = 100 * (ppm_mask & (rtdiff.abs() <= rt_thresh)).sum() / totaldim
+            arr2[i, j] = (100 * (ppm_mask & (rtdiff.abs() <= rt_thresh)).sum()
+                          / totaldim)
 
     # seaborn renders row 0 at the TOP by default; invert_yaxis() moves row 0
     # (the "Identical / = 0 ppm" class) to the BOTTOM, so classes read in

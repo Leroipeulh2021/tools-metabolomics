@@ -1300,8 +1300,10 @@ if nbtot > 0 and len(common_samples) > 0:
             step_fixed = 0.1
             # Use true r-value centres so the x-axis matches the other charts
             bin_centers_fixed = (_bins_lo + (_bins_lo + step_fixed)) / 2
-            bin_labels_fixed = [f'{_bins_lo[i]:.1f}–{min(_bins_lo[i]+step_fixed, 1.0):.1f}'
-                                for i in range(len(_bins_lo))]
+            bin_labels_fixed = [
+                f'{_bins_lo[i]:.1f}–{min(_bins_lo[i]+step_fixed, 1.0):.1f}'
+                for i in range(len(_bins_lo))
+            ]
             bar_colors_fixed = [color_for_r(c) for c in bin_centers_fixed]
 
             fig0, ax0 = plt.subplots(figsize=(11, 4.5))

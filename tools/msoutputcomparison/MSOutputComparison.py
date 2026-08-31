@@ -1150,8 +1150,8 @@ if nbtot > 0 and len(common_samples) > 0:
                 ax.spines[['top', 'right']].set_visible(False)
                 ax.spines[['left', 'bottom']].set_color('#90a4ae')
                 ax.tick_params(colors='#455a64', labelsize=7.5)
-                full_title = f"{title}\n{wf1_name}  vs  {wf2_name}"
-                             f"  —  {n_ion} ions analysed"
+                full_title = (f"{title}\n{wf1_name}  vs  {wf2_name}"
+                              f"  —  {n_ion} ions analysed")
                 if subtitle:
                     full_title += f"\n{subtitle}"
                 ax.set_title(full_title, fontsize=9.5, fontweight='bold',

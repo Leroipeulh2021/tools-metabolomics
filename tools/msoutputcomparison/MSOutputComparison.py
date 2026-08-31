@@ -1439,7 +1439,8 @@ if nbtot > 0 and len(common_samples) > 0:
                         xlabel='Pearson r',
                         ylabel='Number of ions',
                         n_ion=len(r_lower_half),
-                        subtitle=f'Range : [{r_min:.3f} → {r_split:.3f}]  (below split threshold)')
+                        subtitle=f'Range : [{r_min:.3f} → {
+                                      r_split:.3f}]  (below split threshold)')
             # Adaptive Y-axis: scale to the local distribution (not global)
             ax_low.set_ylim(0, _adaptive_ylim(counts_low))
             # Shade the lower zone lightly
@@ -1461,7 +1462,8 @@ if nbtot > 0 and len(common_samples) > 0:
                         xlabel='Pearson r',
                         ylabel='Number of ions',
                         n_ion=len(r_upper_half),
-                        subtitle=f'Range : [{r_split:.3f} → {r_max:.3f}]  (above split threshold)')
+                        subtitle=f'Range : [{r_split:.3f} → {
+                                      r_max:.3f}]  (above split threshold)')
             # Adaptive Y-axis: scale to the local distribution (not global)
             ax_high.set_ylim(0, _adaptive_ylim(counts_high))
             # Shade the upper zone lightly

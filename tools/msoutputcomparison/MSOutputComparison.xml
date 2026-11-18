@@ -20,7 +20,7 @@
     <requirement type="package" version="2.2.3">pandas</requirement>
     <requirement type="package" version="3.9.3">matplotlib</requirement>
     <requirement type="package" version="0.13.2">seaborn</requirement>
-    <requirement type="package" version="62.3">weasyprint</requirement>
+    <requirement type="package" version="65.1">weasyprint</requirement>
   </requirements>
 
   <required_files>

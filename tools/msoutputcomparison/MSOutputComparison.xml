@@ -1,6 +1,11 @@
-<tool id="msoutputcomparison" name="MSOutputComparison" version="1.5.0+galaxy0" profile="22.01">
+<tool id="msoutputcomparison" name="MSOutputComparison" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@" profile="22.01">
 
   <description>compares two MS pipeline outputs (ions, masses, retention times, intensities)</description>
+
+  <macros>
+    <token name="@TOOL_VERSION@">1.5.0</token>
+    <token name="@VERSION_SUFFIX@">0</token>
+  </macros>
    
   <edam_topics>
     <edam_topic>topic_3172</edam_topic>
